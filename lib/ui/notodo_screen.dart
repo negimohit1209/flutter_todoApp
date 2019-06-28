@@ -52,7 +52,7 @@ class _NotodoScreenState extends State<NotodoScreen> {
                 return Card(
                   color: Colors.white,
                   child: ListTile(
-                    title: Text("${_itemList[index].itemName}",),
+                    title: _itemList[index],
                     onLongPress: () => debugPrint("long pressed"),
                     trailing: Listener(
                       key: Key(_itemList[index].itemName),
@@ -99,6 +99,7 @@ class _NotodoScreenState extends State<NotodoScreen> {
             onPressed: () {
               _handleSubmitted(_textFieldController.text);
               _textFieldController.clear();
+              Navigator.pop(context);
             },
             child: Text('save')),
         FlatButton(
@@ -117,8 +118,11 @@ class _NotodoScreenState extends State<NotodoScreen> {
   _readNodoList() async {
     List items = await db.getItems();
     items.forEach((item) {
-      NodoItem noDoItem = NodoItem.fromMap(item);
-      print("DB items: ${noDoItem.itemName}");
+      // NodoItem noDoItem = NodoItem.fromMap(item);
+      setState(() {
+        _itemList.add(NodoItem.fromMap(item));
+      });
+      // print("DB items: ${noDoItem.itemName}");
     });
   }
 }
