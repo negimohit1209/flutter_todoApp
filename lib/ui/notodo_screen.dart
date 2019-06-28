@@ -56,15 +56,21 @@ class _NotodoScreenState extends State<NotodoScreen> {
                     onLongPress: () => debugPrint("long pressed"),
                     trailing: Listener(
                       key: Key(_itemList[index].itemName),
-                      child: Icon(Icons.remove_circle, color: Colors.redAccent,),
-                      onPointerDown: (pointerEvent) => debugPrint("pointerdown preser"),
+                      child: Icon(
+                        Icons.remove_circle,
+                        color: Colors.redAccent,
+                      ),
+                      onPointerDown: (pointerEvent) =>
+                          _deleteNodo(_itemList[index].id, index),
                     ),
                   ),
                 );
               },
             ),
           ),
-          Divider(height: 1.0,)
+          Divider(
+            height: 1.0,
+          )
         ],
       ),
       floatingActionButton: new FloatingActionButton(
@@ -123,6 +129,14 @@ class _NotodoScreenState extends State<NotodoScreen> {
         _itemList.add(NodoItem.fromMap(item));
       });
       // print("DB items: ${noDoItem.itemName}");
+    });
+  }
+
+  _deleteNodo(int id, int index) async {
+    debugPrint('delete Item');
+    await db.deleteItem(id);
+    setState(() {
+      _itemList.removeAt(index);
     });
   }
 }
