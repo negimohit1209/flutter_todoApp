@@ -1,5 +1,6 @@
 import 'package:database_intro/models/nodo.dart';
 import 'package:database_intro/utils/database_client.dart';
+import 'package:database_intro/utils/date_formatter.dart';
 import 'package:flutter/material.dart';
 
 class NotodoScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _NotodoScreenState extends State<NotodoScreen> {
 
   void _handleSubmitted(String text) async {
     _textFieldController.clear();
-    NodoItem nodoItem = NodoItem(text, DateTime.now().toIso8601String());
+    NodoItem nodoItem = NodoItem(text, dateFormatted());
     int savedItemId = await db.saveItem(nodoItem);
     NodoItem addedItem = await db.getItem(savedItemId);
     setState(() {
@@ -53,7 +54,7 @@ class _NotodoScreenState extends State<NotodoScreen> {
                   color: Colors.white,
                   child: ListTile(
                     title: _itemList[index],
-                    onLongPress: () => debugPrint("long pressed"),
+                    onLongPress: () => _updateItem(_itemList[index], index),
                     trailing: Listener(
                       key: Key(_itemList[index].itemName),
                       child: Icon(
@@ -137,6 +138,61 @@ class _NotodoScreenState extends State<NotodoScreen> {
     await db.deleteItem(id);
     setState(() {
       _itemList.removeAt(index);
+    });
+  }
+
+  _updateItem(NodoItem item, int index) {
+    var alert = AlertDialog(
+      title: Text("update item"),
+      content: Row(
+        children: <Widget>[
+          Expanded(
+            child: TextField(
+              controller: _textFieldController,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: "Item",
+                hintText: "Eg. don't buy stuff",
+                icon: Icon(Icons.update),
+              ),
+            ),
+          )
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+            onPressed: () async {
+              NodoItem newItemUpdated = NodoItem.map({
+                "itenName": _textFieldController.text,
+                "dateCreated": dateFormatted(),
+                "id": item.id,
+              });
+              _handleSubmitterUpdate(index, item);
+              await db.updateItem(newItemUpdated);
+              setState(() {
+                _readNodoList();
+              });
+              Navigator.pop(context);
+            },
+            child: Text("Update")),
+        FlatButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel'),
+        )
+      ],
+    );
+    showDialog(
+        context: context,
+        builder: (_) {
+          return alert;
+        });
+  }
+
+  void _handleSubmitterUpdate(int index, NodoItem item) {
+    setState(() {
+      _itemList.removeWhere((element){
+        _itemList[index].itemName == item.itemName;
+      });
     });
   }
 }
